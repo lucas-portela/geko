@@ -8,7 +8,7 @@ What if we could connect pieces of code in a different way? Yes, no need to stop
 In **GeKo** we have two classes, Kode and Gene. You can think of Kode as a Cell or some abstract thing that has a behaviour. The Kode behaviour is built by combining genes:
 
 ```typescript
-imports {Kode, Gene} from "geko";
+import {Kode, Gene} from "geko";
 
 class Clock extends Gene {
   startTime: number;
