@@ -20,7 +20,7 @@ class Clock extends Gene {
   }
 
   get time() {
-    return (Date.now() - this._startTime) / 1000;
+    return (Date.now() - this.startTime) / 1000;
   }
 
   onInit() {
@@ -50,7 +50,7 @@ class ClockLogger extends Gene {
   }
 }
 
-const timer = new Kodo({genes: ()=>[
+const timer = new Kode({genes: ()=>[
   new Clock(1),
   new ClockLogger()
 ]});
