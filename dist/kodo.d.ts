@@ -1,6 +1,6 @@
 import { Gene } from "./gene";
-import { Supression } from "./types";
-export declare class Kode {
+import { Criteria, GeneClass, Supression } from "./types";
+export declare class Kodo {
     private _genes;
     private _genesFn;
     private _isFrozen;
@@ -10,21 +10,16 @@ export declare class Kode {
         genes?: () => Gene[];
         suppress?: Supression<Gene>[];
     });
-    get genes(): Gene[];
+    get genes(): Gene<Record<string, any>, Record<string, any>>[];
     get isAlive(): boolean;
     get isFrozen(): boolean;
-    clone(): Kode;
+    clone(): Kodo;
     init(): boolean;
     freeze(): boolean;
     resume(): boolean;
     kill(): boolean;
     add(gene: () => Gene[]): this;
     remove<GeneType>(supression: Supression<GeneType>): this;
-    findSupressionTargets<GeneType>(supression: Supression<GeneType>): Gene[];
-    find<GeneType>(geneClass: {
-        new (...args: any): GeneType;
-    }): GeneType[];
-    findOne<GeneType>(geneClass: {
-        new (...args: any): GeneType;
-    }): GeneType;
+    find<GeneType>(geneClass: GeneClass<GeneType>, criteria?: Criteria<GeneType>, limitOne?: boolean): GeneType[];
+    findOne<GeneType>(geneClass: GeneClass<GeneType>, criteria?: Criteria<GeneType>): GeneType;
 }

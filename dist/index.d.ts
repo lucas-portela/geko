@@ -1,3 +1,4 @@
 export * from "./gene";
-export * from "./kode";
+export * from "./kodo";
 export * from "./types";
+export * from "./wire";

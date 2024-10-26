@@ -1,7 +1,7 @@
 import { Gene } from "./gene";
-import { Supression } from "./types";
+import { Criteria, GeneClass, Supression } from "./types";
 
-export class Kode {
+export class Kodo {
   private _genes: Gene[] = [];
   private _genesFn: (() => Gene[])[] = [];
   private _isFrozen: boolean = true;
@@ -33,7 +33,7 @@ export class Kode {
   }
 
   clone() {
-    return new Kode({
+    return new Kodo({
       genes: () => this._genesFn.map((fn) => fn()).flat(),
       suppress: this._suppressions,
     });
@@ -50,7 +50,7 @@ export class Kode {
     });
 
     const genesToSuppress: Gene[] = this._suppressions.flatMap((supression) =>
-      this.findSupressionTargets(supression)
+      this.find(supression.gene, supression.criteria)
     );
 
     this._genes = this._genes.filter((gene) => !genesToSuppress.includes(gene));
@@ -101,7 +101,7 @@ export class Kode {
   remove<GeneType>(supression: Supression<GeneType>) {
     this._suppressions.push(supression as Supression<Gene>);
     if (this._isAlive) {
-      const genes = this.findSupressionTargets(supression);
+      const genes = this.find(supression.gene, supression.criteria) as Gene[];
       genes.forEach((gene) => {
         if (!this._isFrozen) gene.freeze();
         if (this._isAlive) gene.kill();
@@ -112,28 +112,35 @@ export class Kode {
     return this;
   }
 
-  findSupressionTargets<GeneType>(supression: Supression<GeneType>) {
-    let genes = this.find(supression.gene) as Gene[];
-    if (supression.criteria)
-      genes = genes.filter((gene) => {
-        for (let field in supression.criteria) {
-          if ((gene as any)[field] != (supression.criteria as any)[field])
-            return false;
-        }
-        return true;
-      });
-    return genes;
+  find<GeneType>(
+    geneClass: GeneClass<GeneType>,
+    criteria: Criteria<GeneType> = {},
+    limitOne = false
+  ) {
+    const filterFn = (gene: Gene) => {
+      if (!(gene instanceof geneClass)) return false;
+      for (let field in criteria) {
+        if ((gene as any)[field] != (criteria as any)[field]) return false;
+      }
+      return true;
+    };
+
+    const results: GeneType[] = [];
+    if (limitOne) {
+      const foundGene = this._genes.find(filterFn) as GeneType;
+      if (foundGene) results.push(foundGene);
+    } else
+      results.push(
+        ...(this._genes.filter(filterFn) as unknown[] as GeneType[])
+      );
+
+    return results;
   }
 
-  find<GeneType>(geneClass: { new (...args: any): GeneType }) {
-    return this._genes.filter(
-      (gene) => gene instanceof geneClass
-    ) as unknown[] as GeneType[];
-  }
-
-  findOne<GeneType>(geneClass: { new (...args: any): GeneType }) {
-    return this._genes.find(
-      (gene) => gene instanceof geneClass
-    ) as unknown as GeneType;
+  findOne<GeneType>(
+    geneClass: GeneClass<GeneType>,
+    criteria: Criteria<GeneType> = {}
+  ) {
+    return this.find(geneClass, criteria, true)[0] || null;
   }
 }

@@ -1,10 +1,10 @@
 {
   "name": "geko",
-  "version": "1.0.5",
+  "version": "1.2.0",
   "description": "Genetika Kodo: A more genetic style of programming, you could call it genetic coding.",
   "main": "dist/index.js",
   "scripts": {
-    "lab": "nodemon lab.ts",
+    "lab": "nodemon lab/index.ts",
     "build": "tsc"
   },
   "author": {
