@@ -1,5 +1,6 @@
 import { Gene } from "./gene";
 import { Criteria, GeneClass, Supression } from "./types";
+import { Wiring } from "./wire";
 
 export class Kodo {
   private _genes: Gene[] = [];
@@ -7,6 +8,7 @@ export class Kodo {
   private _isFrozen: boolean = true;
   private _isAlive: boolean = false;
   private _suppressions: Supression<Gene>[] = [];
+  private _executionResolver: () => void;
 
   constructor({
     genes = () => [],
@@ -39,7 +41,7 @@ export class Kodo {
     });
   }
 
-  init() {
+  async run() {
     if (this._isAlive) return false;
     this._isAlive = true;
     this._isFrozen = false;
@@ -55,9 +57,15 @@ export class Kodo {
 
     this._genes = this._genes.filter((gene) => !genesToSuppress.includes(gene));
 
+    const executionPromise = new Promise<void>(
+      (resolve) => (this._executionResolver = resolve)
+    );
+
     this._genes.forEach((gene) => {
       gene.init(this);
     });
+
+    await executionPromise;
     return true;
   }
 
@@ -83,6 +91,7 @@ export class Kodo {
     }
     this._isAlive = false;
     this._genes.forEach((gene) => gene.kill());
+    if (this._executionResolver) this._executionResolver();
     return true;
   }
 

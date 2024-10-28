@@ -18,4 +18,5 @@ __exportStar(require("./gene"), exports);
 __exportStar(require("./kodo"), exports);
 __exportStar(require("./types"), exports);
 __exportStar(require("./wire"), exports);
+__exportStar(require("./shortcuts"), exports);
 //# sourceMappingURL=index.js.map
