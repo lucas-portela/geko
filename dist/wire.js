@@ -26,7 +26,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Wiring = exports.WireTransformer = exports.WireNamedMultiplexer = exports.WireMultiplexer = exports.Wire = void 0;
+exports.Wiring = exports.WireTransformer = exports.NamedWireMultiplexer = exports.WireMultiplexer = exports.Wire = void 0;
 var Wire = /** @class */ (function () {
     function Wire(_value) {
         var _this = this;
@@ -93,7 +93,7 @@ var Wire = /** @class */ (function () {
         var _b = _a === void 0 ? {} : _a, _c = _b.skipEmit, skipEmit = _c === void 0 ? false : _c;
         if (!this._listeners.includes(listener)) {
             this._listeners.push(listener);
-            if (!skipEmit && this._value != undefined)
+            if (!skipEmit && this.value != undefined)
                 this.emit({ uniqueListener: listener });
             if (this._syncedWith)
                 this._syncedWith.attach(this._syncListener, { skipEmit: skipEmit });
@@ -145,9 +145,6 @@ var WireMultiplexer = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this._pauseChildrenListener = false;
         _this._attached = false;
-        _this._updateValue = function () {
-            _this._value = _this._wires.map(function (wire) { return wire.value; });
-        };
         _this._wires = wires.map(function (wire) {
             if (!(wire instanceof Wire))
                 wire = new Wire(wire);
@@ -162,7 +159,7 @@ var WireMultiplexer = /** @class */ (function (_super) {
     }
     Object.defineProperty(WireMultiplexer.prototype, "value", {
         get: function () {
-            this._updateValue();
+            this._value = this._wires.map(function (wire) { return wire.value; });
             return this._value;
         },
         set: function (values) {
@@ -209,9 +206,9 @@ var WireMultiplexer = /** @class */ (function (_super) {
     return WireMultiplexer;
 }(Wire));
 exports.WireMultiplexer = WireMultiplexer;
-var WireNamedMultiplexer = /** @class */ (function (_super) {
-    __extends(WireNamedMultiplexer, _super);
-    function WireNamedMultiplexer(wires) {
+var NamedWireMultiplexer = /** @class */ (function (_super) {
+    __extends(NamedWireMultiplexer, _super);
+    function NamedWireMultiplexer(wires) {
         var _this = _super.call(this) || this;
         _this._attached = false;
         _this._wires = {};
@@ -222,18 +219,17 @@ var WireNamedMultiplexer = /** @class */ (function (_super) {
             _this._wires[key] = wire;
         }
         _this._chidrenListener = function () {
-            var _a;
-            _this._value = ((_a = _this._value) !== null && _a !== void 0 ? _a : {});
-            for (var key in wires) {
-                var wire = wires[key];
-                _this._value[key] = wire.value;
-            }
             _this.emit();
         };
         return _this;
     }
-    Object.defineProperty(WireNamedMultiplexer.prototype, "value", {
+    Object.defineProperty(NamedWireMultiplexer.prototype, "value", {
         get: function () {
+            this._value = {};
+            for (var key in this._wires) {
+                var wire = this._wires[key];
+                this._value[key] = wire.value;
+            }
             return this._value;
         },
         set: function (values) {
@@ -247,20 +243,23 @@ var WireNamedMultiplexer = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    WireNamedMultiplexer.prototype.attach = function (listener) {
+    NamedWireMultiplexer.prototype.attach = function (listener, _a) {
         var _this = this;
-        if (_super.prototype.attach.call(this, listener)) {
+        var _b = _a === void 0 ? {} : _a, _c = _b.skipEmit, skipEmit = _c === void 0 ? false : _c;
+        if (_super.prototype.attach.call(this, listener, { skipEmit: true })) {
             if (!this._attached) {
                 Object.values(this._wires).forEach(function (wire) {
-                    wire.attach(_this._chidrenListener);
+                    wire.attach(_this._chidrenListener, { skipEmit: true });
                 });
                 this._attached = true;
+                if (!skipEmit && this.value != undefined)
+                    this.emit();
             }
             return true;
         }
         return false;
     };
-    WireNamedMultiplexer.prototype.detach = function (listener) {
+    NamedWireMultiplexer.prototype.detach = function (listener) {
         var _this = this;
         if (_super.prototype.detach.call(this, listener)) {
             if (this._attached && this._listeners.length == 0) {
@@ -273,22 +272,16 @@ var WireNamedMultiplexer = /** @class */ (function (_super) {
         }
         return false;
     };
-    return WireNamedMultiplexer;
+    return NamedWireMultiplexer;
 }(Wire));
-exports.WireNamedMultiplexer = WireNamedMultiplexer;
-var id = 0;
+exports.NamedWireMultiplexer = NamedWireMultiplexer;
 var WireTransformer = /** @class */ (function (_super) {
     __extends(WireTransformer, _super);
     function WireTransformer(wire, transformer) {
         var _this = _super.call(this) || this;
         _this._attached = false;
         _this._wire = wire;
-        _this._updateValue = function () {
-            _this._value =
-                _this._wire.value == undefined
-                    ? undefined
-                    : transformer(_this._wire.value);
-        };
+        _this._transformer = transformer;
         _this._childListener = function () {
             _this.emit();
         };
@@ -296,7 +289,10 @@ var WireTransformer = /** @class */ (function (_super) {
     }
     Object.defineProperty(WireTransformer.prototype, "value", {
         get: function () {
-            this._updateValue();
+            this._value =
+                this._wire.value == undefined
+                    ? undefined
+                    : this._transformer(this._wire.value);
             return this._value;
         },
         set: function (value) { },

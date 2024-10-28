@@ -69,7 +69,7 @@ export class Wire<ValueType> {
   ) {
     if (!this._listeners.includes(listener)) {
       this._listeners.push(listener);
-      if (!skipEmit && this._value != undefined)
+      if (!skipEmit && this.value != undefined)
         this.emit({ uniqueListener: listener });
       if (this._syncedWith)
         this._syncedWith.attach(this._syncListener, { skipEmit });
@@ -118,13 +118,9 @@ export class WireMultiplexer<ValueType> extends Wire<ValueType[]> {
   private _chidrenListener: WireListener<ValueType>;
   private _pauseChildrenListener = false;
   private _attached: boolean = false;
-  private _updateValue: () => void;
 
   constructor(wires: (Wire<ValueType> | ValueType)[]) {
     super();
-    this._updateValue = () => {
-      this._value = this._wires.map((wire) => wire.value);
-    };
 
     this._wires = wires.map((wire) => {
       if (!(wire instanceof Wire)) wire = new Wire(wire);
@@ -137,7 +133,7 @@ export class WireMultiplexer<ValueType> extends Wire<ValueType[]> {
   }
 
   get value() {
-    this._updateValue();
+    this._value = this._wires.map((wire) => wire.value);
     return this._value;
   }
 
@@ -181,7 +177,7 @@ export class WireMultiplexer<ValueType> extends Wire<ValueType[]> {
   }
 }
 
-export class WireNamedMultiplexer<
+export class NamedWireMultiplexer<
   NamedTypes extends Record<string, any>
 > extends Wire<Partial<NamedTypes>> {
   private _wires: Partial<{
@@ -201,16 +197,16 @@ export class WireNamedMultiplexer<
       this._wires[key] = wire;
     }
     this._chidrenListener = () => {
-      this._value = (this._value ?? {}) as NamedTypes;
-      for (let key in wires) {
-        const wire = wires[key];
-        this._value[key] = wire.value;
-      }
       this.emit();
     };
   }
 
   get value() {
+    this._value = {} as NamedTypes;
+    for (let key in this._wires) {
+      const wire = this._wires[key];
+      this._value[key] = wire.value;
+    }
     return this._value;
   }
 
@@ -222,13 +218,17 @@ export class WireNamedMultiplexer<
     this.emit();
   }
 
-  attach(listener: WireListener<Partial<NamedTypes>>): boolean {
-    if (super.attach(listener)) {
+  attach(
+    listener: WireListener<Partial<NamedTypes>>,
+    { skipEmit = false }: { skipEmit?: boolean } = {}
+  ): boolean {
+    if (super.attach(listener, { skipEmit: true })) {
       if (!this._attached) {
         Object.values(this._wires).forEach((wire) => {
-          wire.attach(this._chidrenListener);
+          wire.attach(this._chidrenListener, { skipEmit: true });
         });
         this._attached = true;
+        if (!skipEmit && this.value != undefined) this.emit();
       }
       return true;
     }
@@ -249,7 +249,6 @@ export class WireNamedMultiplexer<
   }
 }
 
-let id = 0;
 export class WireTransformer<
   ValueType,
   TransformedType
@@ -257,7 +256,7 @@ export class WireTransformer<
   private _wire: Wire<ValueType>;
   private _childListener: WireListener<ValueType>;
   private _attached: boolean = false;
-  private _updateValue: () => void;
+  private _transformer: (value: ValueType) => TransformedType;
 
   constructor(
     wire: Wire<ValueType>,
@@ -265,19 +264,17 @@ export class WireTransformer<
   ) {
     super();
     this._wire = wire;
-    this._updateValue = () => {
-      this._value =
-        this._wire.value == undefined
-          ? undefined
-          : transformer(this._wire.value);
-    };
+    this._transformer = transformer;
     this._childListener = () => {
       this.emit();
     };
   }
 
   get value() {
-    this._updateValue();
+    this._value =
+      this._wire.value == undefined
+        ? undefined
+        : this._transformer(this._wire.value);
     return this._value;
   }
 

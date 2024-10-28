@@ -22,7 +22,7 @@ var plex = function (wires) {
     return new wire_1.WireMultiplexer(wires);
 };
 exports.plex = plex;
-var named = function (wires) { return new wire_1.WireNamedMultiplexer(wires); };
+var named = function (wires) { return new wire_1.NamedWireMultiplexer(wires); };
 exports.named = named;
 var transform = function (wire, transformer) { return new wire_1.WireTransformer(wire, transformer); };
 exports.transform = transform;

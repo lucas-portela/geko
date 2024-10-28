@@ -27,7 +27,6 @@ export declare class WireMultiplexer<ValueType> extends Wire<ValueType[]> {
     private _chidrenListener;
     private _pauseChildrenListener;
     private _attached;
-    private _updateValue;
     constructor(wires: (Wire<ValueType> | ValueType)[]);
     get value(): ValueType[];
     set value(values: ValueType[]);
@@ -36,7 +35,7 @@ export declare class WireMultiplexer<ValueType> extends Wire<ValueType[]> {
     }): boolean;
     detach(listener: WireListener<ValueType[]>): boolean;
 }
-export declare class WireNamedMultiplexer<NamedTypes extends Record<string, any>> extends Wire<Partial<NamedTypes>> {
+export declare class NamedWireMultiplexer<NamedTypes extends Record<string, any>> extends Wire<Partial<NamedTypes>> {
     private _wires;
     private _chidrenListener;
     private _attached;
@@ -45,14 +44,16 @@ export declare class WireNamedMultiplexer<NamedTypes extends Record<string, any>
     });
     get value(): Partial<NamedTypes>;
     set value(values: Partial<NamedTypes>);
-    attach(listener: WireListener<Partial<NamedTypes>>): boolean;
+    attach(listener: WireListener<Partial<NamedTypes>>, { skipEmit }?: {
+        skipEmit?: boolean;
+    }): boolean;
     detach(listener: WireListener<Partial<NamedTypes>>): boolean;
 }
 export declare class WireTransformer<ValueType, TransformedType> extends Wire<TransformedType> {
     private _wire;
     private _childListener;
     private _attached;
-    private _updateValue;
+    private _transformer;
     constructor(wire: Wire<ValueType>, transformer: (value: ValueType) => TransformedType);
     get value(): TransformedType;
     set value(value: TransformedType);

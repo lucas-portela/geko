@@ -4,7 +4,7 @@ import { Supression } from "./types";
 import {
   Wire,
   WireMultiplexer,
-  WireNamedMultiplexer,
+  NamedWireMultiplexer,
   WireTransformer,
 } from "./wire";
 
@@ -33,7 +33,7 @@ export const plex = <ValueType>(wires: (Wire<ValueType> | ValueType)[]) =>
 
 export const named = <NamedTypes extends Record<string, any>>(wires: {
   [key in keyof NamedTypes]?: Wire<NamedTypes[key] | NamedTypes[key]>;
-}) => new WireNamedMultiplexer(wires);
+}) => new NamedWireMultiplexer(wires);
 
 export const transform = <ValueType, TransformedType>(
   wire: Wire<ValueType>,

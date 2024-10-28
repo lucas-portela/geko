@@ -1,10 +1,10 @@
 import { Gene } from "./gene";
 import { Kodo } from "./kodo";
 import { Supression } from "./types";
-import { Wire, WireMultiplexer, WireNamedMultiplexer, WireTransformer } from "./wire";
+import { Wire, WireMultiplexer, NamedWireMultiplexer, WireTransformer } from "./wire";
 export declare const kodo: (genes?: () => Gene[], suppress?: Supression<Gene>[]) => Kodo;
 export declare const gene: <InputType, OutputType>(lifeCycle: Partial<Pick<Gene<InputType, OutputType>, "onInit" | "onFreeze" | "onResume" | "onKill">>) => Gene<InputType, OutputType>;
 export declare const wire: <ValueType>(value?: ValueType) => Wire<ValueType>;
 export declare const plex: <ValueType>(wires: (Wire<ValueType> | ValueType)[]) => WireMultiplexer<ValueType>;
-export declare const named: <NamedTypes extends Record<string, any>>(wires: { [key in keyof NamedTypes]?: Wire<NamedTypes[key] | NamedTypes[key]>; }) => WireNamedMultiplexer<NamedTypes>;
+export declare const named: <NamedTypes extends Record<string, any>>(wires: { [key in keyof NamedTypes]?: Wire<NamedTypes[key] | NamedTypes[key]>; }) => NamedWireMultiplexer<NamedTypes>;
 export declare const transform: <ValueType, TransformedType>(wire: Wire<ValueType>, transformer: (value: ValueType) => TransformedType) => WireTransformer<ValueType, TransformedType>;
