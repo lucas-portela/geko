@@ -19,4 +19,5 @@ __exportStar(require("./kodo"), exports);
 __exportStar(require("./types"), exports);
 __exportStar(require("./wire"), exports);
 __exportStar(require("./shortcuts"), exports);
+__exportStar(require("./utils"), exports);
 //# sourceMappingURL=index.js.map

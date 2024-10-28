@@ -13,4 +13,10 @@ export type InputWiring<InputType> = {
 export type OutputWiring<OutputType> = {
     [key in keyof OutputType]?: Wire<OutputType[key]>[];
 };
-export type WireListener<ValueType> = (value: ValueType) => void;
+export type WireListener<ValueType> = ((value: ValueType) => void) & {
+    priority?: number;
+};
+export type KodoIO<InputType, OutputType> = {
+    input: InputWiring<InputType>;
+    output: OutputWiring<OutputType>;
+};
