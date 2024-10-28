@@ -61,8 +61,14 @@ export class Kodo {
       (resolve) => (this._executionResolver = resolve)
     );
 
+    console.log("running");
+
     this._genes.forEach((gene) => {
       gene.init(this);
+    });
+
+    this._genes.forEach((gene) => {
+      gene.onReady();
     });
 
     await executionPromise;

@@ -27,10 +27,10 @@ export declare class WireMultiplexer<ValueType> extends Wire<ValueType[]> {
     private _chidrenListener;
     private _pauseChildrenListener;
     private _attached;
+    private _updateValue;
     constructor(wires: (Wire<ValueType> | ValueType)[]);
     get value(): ValueType[];
     set value(values: ValueType[]);
-    private _updateValue;
     attach(listener: WireListener<ValueType[]>, { skipEmit }?: {
         skipEmit?: boolean;
     }): boolean;

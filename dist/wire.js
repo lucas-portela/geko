@@ -145,6 +145,9 @@ var WireMultiplexer = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this._pauseChildrenListener = false;
         _this._attached = false;
+        _this._updateValue = function () {
+            _this._value = _this._wires.map(function (wire) { return wire.value; });
+        };
         _this._wires = wires.map(function (wire) {
             if (!(wire instanceof Wire))
                 wire = new Wire(wire);
@@ -153,14 +156,13 @@ var WireMultiplexer = /** @class */ (function (_super) {
         _this._chidrenListener = function () {
             if (_this._pauseChildrenListener)
                 return;
-            _this._updateValue();
             _this.emit();
         };
-        _this._updateValue();
         return _this;
     }
     Object.defineProperty(WireMultiplexer.prototype, "value", {
         get: function () {
+            this._updateValue();
             return this._value;
         },
         set: function (values) {
@@ -169,16 +171,12 @@ var WireMultiplexer = /** @class */ (function (_super) {
             values.forEach(function (value, i) {
                 _this._wires[i].value = value;
             });
-            this._updateValue();
             this._pauseChildrenListener = false;
             this.emit();
         },
         enumerable: false,
         configurable: true
     });
-    WireMultiplexer.prototype._updateValue = function () {
-        this._value = this._wires.map(function (wire) { return wire.value; });
-    };
     WireMultiplexer.prototype.attach = function (listener, _a) {
         var _this = this;
         var _b = _a === void 0 ? {} : _a, _c = _b.skipEmit, skipEmit = _c === void 0 ? false : _c;
@@ -188,10 +186,8 @@ var WireMultiplexer = /** @class */ (function (_super) {
                     wire.attach(_this._chidrenListener, { skipEmit: true });
                 });
                 this._attached = true;
-                if (!skipEmit) {
-                    this._updateValue();
+                if (!skipEmit && this.value != undefined)
                     this.emit();
-                }
             }
             return true;
         }
@@ -288,23 +284,19 @@ var WireTransformer = /** @class */ (function (_super) {
         _this._attached = false;
         _this._wire = wire;
         _this._updateValue = function () {
-            _this._value = transformer(_this._wire.value);
+            _this._value =
+                _this._wire.value == undefined
+                    ? undefined
+                    : transformer(_this._wire.value);
         };
         _this._childListener = function () {
-            _this._updateValue();
             _this.emit();
         };
-        if (_this._wire.value !== undefined)
-            _this._updateValue();
         return _this;
-        // let myId = id++;
-        // setInterval(() => {
-        //   this._updateValue();
-        //   console.log(`D (${myId}):`, this.value);
-        // }, 500);
     }
     Object.defineProperty(WireTransformer.prototype, "value", {
         get: function () {
+            this._updateValue();
             return this._value;
         },
         set: function (value) { },
@@ -317,10 +309,8 @@ var WireTransformer = /** @class */ (function (_super) {
             if (!this._attached) {
                 this._wire.attach(this._childListener, { skipEmit: true });
                 this._attached = true;
-                if (!skipEmit) {
-                    this._updateValue();
+                if (!skipEmit && this.value != undefined)
                     this.emit();
-                }
             }
             return true;
         }

@@ -23,6 +23,7 @@ var Gene = /** @class */ (function (_super) {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this._kodo = null;
         _this._isFrozen = false;
+        _this._isReady = false;
         return _this;
     }
     Object.defineProperty(Gene.prototype, "kodo", {
@@ -46,10 +47,21 @@ var Gene = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Gene.prototype.watch = function (key, listener) {
+        if (this._isReady)
+            throw new Error("[GeKo] Cannot Watch Input: watching input in only allowed in `Gene.onInit`!");
+        return _super.prototype.watch.call(this, key, listener);
+    };
+    Gene.prototype.write = function (key, value) {
+        if (!this._isReady)
+            throw new Error("[GeKo] Cannot Write On Output: writing output is not allowed in `Gene.onInit`! Please, try to use `Gene.onReady` instead.");
+        return _super.prototype.write.call(this, key, value);
+    };
     Gene.prototype.init = function (kodo) {
         this._kodo = kodo;
         this._isFrozen = false;
         this.onInit();
+        this._isReady = true;
     };
     Gene.prototype.freeze = function () {
         this._detachWireListeners();
@@ -67,6 +79,7 @@ var Gene = /** @class */ (function (_super) {
         this._kodo = null;
     };
     Gene.prototype.onInit = function () { };
+    Gene.prototype.onReady = function () { };
     Gene.prototype.onFreeze = function () { };
     Gene.prototype.onResume = function () { };
     Gene.prototype.onKill = function () { };

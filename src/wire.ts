@@ -118,23 +118,26 @@ export class WireMultiplexer<ValueType> extends Wire<ValueType[]> {
   private _chidrenListener: WireListener<ValueType>;
   private _pauseChildrenListener = false;
   private _attached: boolean = false;
+  private _updateValue: () => void;
 
   constructor(wires: (Wire<ValueType> | ValueType)[]) {
     super();
+    this._updateValue = () => {
+      this._value = this._wires.map((wire) => wire.value);
+    };
+
     this._wires = wires.map((wire) => {
       if (!(wire instanceof Wire)) wire = new Wire(wire);
       return wire;
     });
     this._chidrenListener = () => {
       if (this._pauseChildrenListener) return;
-      this._updateValue();
       this.emit();
     };
-
-    this._updateValue();
   }
 
   get value() {
+    this._updateValue();
     return this._value;
   }
 
@@ -143,13 +146,8 @@ export class WireMultiplexer<ValueType> extends Wire<ValueType[]> {
     values.forEach((value, i) => {
       this._wires[i].value = value;
     });
-    this._updateValue();
     this._pauseChildrenListener = false;
     this.emit();
-  }
-
-  private _updateValue() {
-    this._value = this._wires.map((wire) => wire.value);
   }
 
   attach(
@@ -162,10 +160,7 @@ export class WireMultiplexer<ValueType> extends Wire<ValueType[]> {
           wire.attach(this._chidrenListener, { skipEmit: true });
         });
         this._attached = true;
-        if (!skipEmit) {
-          this._updateValue();
-          this.emit();
-        }
+        if (!skipEmit && this.value != undefined) this.emit();
       }
       return true;
     }
@@ -271,23 +266,18 @@ export class WireTransformer<
     super();
     this._wire = wire;
     this._updateValue = () => {
-      this._value = transformer(this._wire.value);
+      this._value =
+        this._wire.value == undefined
+          ? undefined
+          : transformer(this._wire.value);
     };
     this._childListener = () => {
-      this._updateValue();
       this.emit();
     };
-    if (this._wire.value !== undefined) this._updateValue();
-
-    // let myId = id++;
-
-    // setInterval(() => {
-    //   this._updateValue();
-    //   console.log(`D (${myId}):`, this.value);
-    // }, 500);
   }
 
   get value() {
+    this._updateValue();
     return this._value;
   }
 
@@ -301,10 +291,7 @@ export class WireTransformer<
       if (!this._attached) {
         this._wire.attach(this._childListener, { skipEmit: true });
         this._attached = true;
-        if (!skipEmit) {
-          this._updateValue();
-          this.emit();
-        }
+        if (!skipEmit && this.value != undefined) this.emit();
       }
       return true;
     }

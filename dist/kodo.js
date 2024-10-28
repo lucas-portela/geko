@@ -107,8 +107,12 @@ var Kodo = /** @class */ (function () {
                         });
                         this._genes = this._genes.filter(function (gene) { return !genesToSuppress.includes(gene); });
                         executionPromise = new Promise(function (resolve) { return (_this._executionResolver = resolve); });
+                        console.log("running");
                         this._genes.forEach(function (gene) {
                             gene.init(_this);
+                        });
+                        this._genes.forEach(function (gene) {
+                            gene.onReady();
                         });
                         return [4 /*yield*/, executionPromise];
                     case 1:
