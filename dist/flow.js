@@ -133,9 +133,6 @@ var Flow = /** @class */ (function () {
                                         }
                                         current = this_1._flow[cursor.address];
                                         if (!(current instanceof kodo_1.Kodo)) return [3 /*break*/, 2];
-                                        if (current.isActive) {
-                                            console.log("Activating wrong kodo!");
-                                        }
                                         return [4 /*yield*/, current.run()];
                                     case 1:
                                         if (!(_b.sent())) {
@@ -147,7 +144,6 @@ var Flow = /** @class */ (function () {
                                         return [3 /*break*/, 6];
                                     case 2:
                                         if (!(current instanceof FlowControl)) return [3 /*break*/, 5];
-                                        console.log("\t-> ".concat(current.comment));
                                         spawned_1 = [];
                                         spawn = function (address) {
                                             var newCursor = new FlowCursor(address);
@@ -161,12 +157,6 @@ var Flow = /** @class */ (function () {
                                         return [4 /*yield*/, Promise.all(spawned_1.map(function (c) { return c.result; }))];
                                     case 4:
                                         result = _b.sent();
-                                        if (current.comment == "$split:spawn-threads") {
-                                            console.log("spawn!");
-                                        }
-                                        if (current.comment == "$split:goto-end") {
-                                            console.log("split end!");
-                                        }
                                         if (result.find(function (result) { return result === false; })) {
                                             cursor.fail();
                                             return [2 /*return*/, "break"];

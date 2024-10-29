@@ -68,15 +68,11 @@ export class Flow {
       }
       const current = this._flow[cursor.address];
       if (current instanceof Kodo) {
-        if (current.isActive) {
-          console.log("Activating wrong kodo!");
-        }
         if (!(await current.run())) {
           cursor.fail();
           break;
         } else cursor.address++;
       } else if (current instanceof FlowControl) {
-        console.log(`\t-> ${current.comment}`);
         const spawned: FlowCursor[] = [];
         const spawn = (address: number) => {
           const newCursor = new FlowCursor(address);
@@ -88,12 +84,7 @@ export class Flow {
         await current.eval(cursor, spawn);
 
         const result = await Promise.all(spawned.map((c) => c.result));
-        if (current.comment == "$split:spawn-threads") {
-          console.log("spawn!");
-        }
-        if (current.comment == "$split:goto-end") {
-          console.log("split end!");
-        }
+
         if (result.find((result) => result === false)) {
           cursor.fail();
           break;
