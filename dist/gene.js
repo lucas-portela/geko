@@ -35,7 +35,7 @@ var Gene = /** @class */ (function (_super) {
     });
     Object.defineProperty(Gene.prototype, "isActive", {
         get: function () {
-            return !!this._kodo && this._kodo.isAlive;
+            return !!this._kodo && this._kodo.isActive;
         },
         enumerable: false,
         configurable: true
@@ -43,6 +43,13 @@ var Gene = /** @class */ (function (_super) {
     Object.defineProperty(Gene.prototype, "isFrozen", {
         get: function () {
             return this._isFrozen;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Gene.prototype, "isReady", {
+        get: function () {
+            return this._isReady;
         },
         enumerable: false,
         configurable: true
@@ -58,6 +65,7 @@ var Gene = /** @class */ (function (_super) {
         return _super.prototype.write.call(this, key, value);
     };
     Gene.prototype.init = function (kodo) {
+        this._isReady = false;
         this._kodo = kodo;
         this._isFrozen = false;
         this.onInit();

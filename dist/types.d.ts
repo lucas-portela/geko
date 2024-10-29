@@ -1,3 +1,5 @@
+import { FlowControl } from "./flow";
+import { Kodo } from "./kodo";
 import { Wire } from "./wire";
 export type GeneClass<GeneType> = {
     new (...args: any): GeneType;
@@ -20,3 +22,6 @@ export type KodoIO<InputType, OutputType> = {
     input: InputWiring<InputType>;
     output: OutputWiring<OutputType>;
 };
+export type FlowLogicItem = Kodo | FlowControl;
+export type FlowLogic<FlowLogicType = {}> = FlowLogicItem[] & FlowLogicType;
+export type DeepFlowLogic<FlowLogicType = {}> = (FlowLogicItem | FlowLogic | FlowLogic<FlowLogicType>)[];

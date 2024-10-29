@@ -52,7 +52,7 @@ var Kodo = /** @class */ (function () {
         this._genes = [];
         this._genesFn = [];
         this._isFrozen = true;
-        this._isAlive = false;
+        this._isActive = false;
         this._suppressions = [];
         this._suppressions = __spreadArray([], suppress, true);
         this._genesFn = [];
@@ -65,9 +65,9 @@ var Kodo = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(Kodo.prototype, "isAlive", {
+    Object.defineProperty(Kodo.prototype, "isActive", {
         get: function () {
-            return this._isAlive;
+            return this._isActive;
         },
         enumerable: false,
         configurable: true
@@ -88,14 +88,14 @@ var Kodo = /** @class */ (function () {
     };
     Kodo.prototype.run = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var genesToSuppress, executionPromise;
+            var genesToSuppress, executionPromise, processKeepAlive;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (this._isAlive)
+                        if (this._isActive)
                             return [2 /*return*/, false];
-                        this._isAlive = true;
+                        this._isActive = true;
                         this._isFrozen = false;
                         this._genes = [];
                         this._genesFn.forEach(function (geneFn) {
@@ -106,52 +106,56 @@ var Kodo = /** @class */ (function () {
                             return _this.find(supression.gene, supression.criteria);
                         });
                         this._genes = this._genes.filter(function (gene) { return !genesToSuppress.includes(gene); });
-                        executionPromise = new Promise(function (resolve) { return (_this._executionResolver = resolve); });
-                        console.log("running");
+                        executionPromise = new Promise(function (resolve) {
+                            _this._executionResolver = resolve;
+                        });
                         this._genes.forEach(function (gene) {
                             gene.init(_this);
                         });
                         this._genes.forEach(function (gene) {
                             gene.onReady();
                         });
+                        processKeepAlive = function () {
+                            if (_this.isActive)
+                                setTimeout(processKeepAlive, 500);
+                        };
+                        processKeepAlive();
                         return [4 /*yield*/, executionPromise];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/, true];
+                    case 1: return [2 /*return*/, _a.sent()];
                 }
             });
         });
     };
     Kodo.prototype.freeze = function () {
-        if (this._isFrozen || !this._isAlive)
+        if (this._isFrozen || !this._isActive)
             return false;
         this._isFrozen = true;
         this._genes.forEach(function (gene) { return gene.freeze(); });
         return true;
     };
     Kodo.prototype.resume = function () {
-        if (!this._isFrozen || !this._isAlive)
+        if (!this._isFrozen || !this._isActive)
             return false;
         this._isFrozen = false;
         this._genes.forEach(function (gene) { return gene.continue(); });
         return true;
     };
-    Kodo.prototype.kill = function () {
-        if (!this._isAlive)
+    Kodo.prototype.finish = function () {
+        if (!this._isActive)
             return false;
         if (!this._isFrozen) {
             this._genes.forEach(function (gene) { return gene.freeze(); });
             this._isFrozen = true;
         }
-        this._isAlive = false;
+        this._isActive = false;
         this._genes.forEach(function (gene) { return gene.kill(); });
         if (this._executionResolver)
-            this._executionResolver();
+            this._executionResolver(true);
         return true;
     };
     Kodo.prototype.add = function (gene) {
         var _this = this;
-        if (this._isAlive) {
+        if (this._isActive) {
             gene().forEach(function (geneInstance) {
                 _this._genes.push(geneInstance);
                 geneInstance.init(_this);
@@ -165,12 +169,12 @@ var Kodo = /** @class */ (function () {
     Kodo.prototype.remove = function (supression) {
         var _this = this;
         this._suppressions.push(supression);
-        if (this._isAlive) {
+        if (this._isActive) {
             var genes_1 = this.find(supression.gene, supression.criteria);
             genes_1.forEach(function (gene) {
                 if (!_this._isFrozen)
                     gene.freeze();
-                if (_this._isAlive)
+                if (_this._isActive)
                     gene.kill();
             });
             this._genes = this._genes.filter(function (gene) { return !genes_1.includes(gene); });

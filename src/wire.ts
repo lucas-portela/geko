@@ -105,12 +105,25 @@ export class Wire<ValueType> {
   }
 
   pipe(wires: Wire<ValueType>[] | undefined) {
+    if (!wires) return this;
     wires.forEach((wire) => {
       if (!this._pipedWires.includes(wire)) this._pipedWires.push(wire);
     });
     if (this.value != undefined) this._applyPipe();
     return this;
   }
+}
+
+export class ComputedWire<ValueType> extends Wire<ValueType> {
+  constructor(private _compute: () => ValueType) {
+    super();
+  }
+
+  get value() {
+    return this._compute();
+  }
+
+  set value(_: ValueType) {}
 }
 
 export class WireMultiplexer<ValueType> extends Wire<ValueType[]> {
@@ -336,7 +349,10 @@ export class Wiring<InputType = any, OutputType = any> {
     return false;
   }
 
-  wait<Key extends keyof InputType>(key: Key, timeout?: number) {
+  wait<Key extends keyof InputType>(
+    key: Key,
+    timeout?: number
+  ): Promise<InputType[Key]> {
     const wire = this._input[key];
     if (wire) return wire.wait(timeout);
     return null;

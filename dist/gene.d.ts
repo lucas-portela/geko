@@ -8,6 +8,7 @@ export declare class Gene<InputType = any, OutputType = any> extends Wiring<Inpu
     get kodo(): Kodo;
     get isActive(): boolean;
     get isFrozen(): boolean;
+    get isReady(): boolean;
     watch<Key extends keyof InputType>(key: Key, listener: WireListener<InputType[Key]>): boolean;
     write<Key extends keyof OutputType>(key: Key, value: OutputType[Key]): void;
     init(kodo: Kodo): void;

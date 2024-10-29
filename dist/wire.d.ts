@@ -22,6 +22,12 @@ export declare class Wire<ValueType> {
     unsync(): this;
     pipe(wires: Wire<ValueType>[] | undefined): this;
 }
+export declare class ComputedWire<ValueType> extends Wire<ValueType> {
+    private _compute;
+    constructor(_compute: () => ValueType);
+    get value(): ValueType;
+    set value(_: ValueType);
+}
 export declare class WireMultiplexer<ValueType> extends Wire<ValueType[]> {
     private _wires;
     private _chidrenListener;

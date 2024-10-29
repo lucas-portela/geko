@@ -1,6 +1,6 @@
 {
   "name": "geko",
-  "version": "2.1.1",
+  "version": "3.0.0",
   "description": "Genetika Kodo: A more genetic style of programming, you could call it genetic coding.",
   "main": "dist/index.js",
   "scripts": {

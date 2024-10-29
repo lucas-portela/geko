@@ -26,7 +26,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Wiring = exports.WireTransformer = exports.NamedWireMultiplexer = exports.WireMultiplexer = exports.Wire = void 0;
+exports.Wiring = exports.WireTransformer = exports.NamedWireMultiplexer = exports.WireMultiplexer = exports.ComputedWire = exports.Wire = void 0;
 var Wire = /** @class */ (function () {
     function Wire(_value) {
         var _this = this;
@@ -128,6 +128,8 @@ var Wire = /** @class */ (function () {
     };
     Wire.prototype.pipe = function (wires) {
         var _this = this;
+        if (!wires)
+            return this;
         wires.forEach(function (wire) {
             if (!_this._pipedWires.includes(wire))
                 _this._pipedWires.push(wire);
@@ -139,6 +141,24 @@ var Wire = /** @class */ (function () {
     return Wire;
 }());
 exports.Wire = Wire;
+var ComputedWire = /** @class */ (function (_super) {
+    __extends(ComputedWire, _super);
+    function ComputedWire(_compute) {
+        var _this = _super.call(this) || this;
+        _this._compute = _compute;
+        return _this;
+    }
+    Object.defineProperty(ComputedWire.prototype, "value", {
+        get: function () {
+            return this._compute();
+        },
+        set: function (_) { },
+        enumerable: false,
+        configurable: true
+    });
+    return ComputedWire;
+}(Wire));
+exports.ComputedWire = ComputedWire;
 var WireMultiplexer = /** @class */ (function (_super) {
     __extends(WireMultiplexer, _super);
     function WireMultiplexer(wires) {

@@ -15,11 +15,15 @@ export class Gene<InputType = any, OutputType = any> extends Wiring<
   }
 
   get isActive() {
-    return !!this._kodo && this._kodo.isAlive;
+    return !!this._kodo && this._kodo.isActive;
   }
 
   get isFrozen() {
     return this._isFrozen;
+  }
+
+  get isReady() {
+    return this._isReady;
   }
 
   watch<Key extends keyof InputType>(
@@ -42,6 +46,7 @@ export class Gene<InputType = any, OutputType = any> extends Wiring<
   }
 
   init(kodo: Kodo) {
+    this._isReady = false;
     this._kodo = kodo;
     this._isFrozen = false;
     this.onInit();
