@@ -9,6 +9,8 @@ export class Gene<InputType = any, OutputType = any> extends Wiring<
   private _kodo: Kodo | null = null;
   private _isFrozen: boolean = false;
   private _isReady: boolean = false;
+  private _readyResolver: () => void;
+  private _readyPromise: Promise<void>;
 
   get kodo() {
     return this._kodo as Kodo;
@@ -37,20 +39,24 @@ export class Gene<InputType = any, OutputType = any> extends Wiring<
     return super.watch(key, listener);
   }
 
-  write<Key extends keyof OutputType>(key: Key, value: OutputType[Key]): void {
-    if (!this._isReady)
-      throw new Error(
-        "[GeKo] Cannot Write On Output: writing output is not allowed in `Gene.onInit`! Please, try to use `Gene.onReady` instead."
-      );
+  async write<Key extends keyof OutputType>(
+    key: Key,
+    value: OutputType[Key]
+  ): Promise<void> {
+    await this._readyPromise;
     return super.write(key, value);
   }
 
   init(kodo: Kodo) {
+    this._readyPromise = new Promise<void>(
+      (resolve) => (this._readyResolver = resolve)
+    );
     this._isReady = false;
     this._kodo = kodo;
     this._isFrozen = false;
     this.onInit();
     this._isReady = true;
+    this._readyResolver();
   }
 
   freeze() {
