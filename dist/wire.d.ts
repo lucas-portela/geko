@@ -72,7 +72,7 @@ export declare class Wiring<InputType = any, OutputType = any> {
     private _input;
     private _output;
     private _wireListeners;
-    read<Key extends keyof InputType>(key: keyof InputType): InputType[Key];
+    read<Key extends keyof InputType>(key: Key): InputType[Key];
     write<Key extends keyof OutputType>(key: Key, value: OutputType[Key]): void;
     watch<Key extends keyof InputType>(key: Key, listener: WireListener<InputType[Key]>): boolean;
     wait<Key extends keyof InputType>(key: Key, timeout?: number): Promise<InputType[Key]>;
