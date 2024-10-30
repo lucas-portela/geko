@@ -75,12 +75,12 @@ var $priority = function (priority, listener) {
 };
 exports.$priority = $priority;
 var $first = function (listener) {
-    listener.priority = Number.MIN_VALUE;
+    listener.priority = Number.MIN_SAFE_INTEGER;
     return listener;
 };
 exports.$first = $first;
 var $last = function (listener) {
-    listener.priority = Number.MAX_VALUE;
+    listener.priority = Number.MAX_SAFE_INTEGER;
     return listener;
 };
 exports.$last = $last;

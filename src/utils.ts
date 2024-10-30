@@ -27,12 +27,12 @@ export const $priority = <ValueType>(
 };
 
 export const $first = <ValueType>(listener: WireListener<ValueType>) => {
-  listener.priority = Number.MIN_VALUE;
+  listener.priority = Number.MIN_SAFE_INTEGER;
   return listener;
 };
 
 export const $last = <ValueType>(listener: WireListener<ValueType>) => {
-  listener.priority = Number.MAX_VALUE;
+  listener.priority = Number.MAX_SAFE_INTEGER;
   return listener;
 };
 
