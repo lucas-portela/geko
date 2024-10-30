@@ -104,7 +104,81 @@ As we saw, you can manipulate the genome of a kodo, but you can also clone it an
 - `clone(): Kodo`: what is life without replication? This method recplicates you Kodo in a new instance but following the built result of every operation of adding or removing
 a gene, so we can say this method also clones the mutations you made;
 
+## Introducing GeKo v3.0: Added Flow and Shortcuts !!!
+All that was done above and even more, can be achieved in a more isolated and shorter way:
+```typescript
+const Timer = $kodo<
+    { label: string; interval: number; duration: number },
+    { time: number }
+  >(({ input, output }) => {
+  const time = $wire<number>().pipe(output.time);
 
+  return [
+    new Clock().input({ interval: input.interval }).output({ time: [time] }),
+    new Logger().input({
+      message: $str(
+        input.label,
+        $transform(time, (v) => v.toFixed(1)),
+        "s"
+      ).sync(time),
+    }),
+    new Expiration().input({ time, expiresIn: input.duration }),
+  ];
+});
+
+const testFlow = $flow(
+  $repeat(
+    $num(4),
+    (i)=>[
+      $if(()=>i.value<2,
+        Timer({
+          label: $str("Solo Timer (i:", i, "):"),
+          interval: $num(1),
+          duration: $num(5),
+        })
+        $else(
+          $split(
+            $thread(
+              Timer({
+                label: $str("\nTimer A:"),
+                interval: $num(1),
+                duration: $num(5),
+              }),
+              Timer({
+                label: $str("Timer B:"),
+                interval: $num(1),
+                duration: $num(5),
+              })
+            ),
+            $thread(
+              Timer({
+                label: $str("Timer C:"),
+                interval: $num(0.2),
+                duration: $num(10),
+              })
+            )
+          )
+        )
+      )
+    ])
+  ),
+  $thread(
+    Timer({
+      label: $str("Timer D:"),
+      interval: $num(0.1),
+      duration: $num(5),
+    })
+  )
+);
+
+testFLow.run()
+```
+Here we a `Timer` factory that declares inputs and outputs using Generic parameters and builds a fully functional timer, with its own internal clock! This way we can "instantiate" multiple independent versions of the Timer Kodo.
+
+Using shortcuts, your Kodo factories will be ready to receive fully typed Wires to interact with the external world
+and still be safely isolated :D
+
+This example also showcases the use o FLows to orchestrate the execution of multiple Kodos. We also have a lot of new things to explain, and I will write a better doc later to cover everything.
 
 ## More Later
 I have a plent of ideias for this thing, feel free to send sugestions. Of course I expect to be able to play with emergent behaviour using **GeKo** and 

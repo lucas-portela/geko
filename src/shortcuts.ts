@@ -1,13 +1,7 @@
-import { Flow, FlowControl } from "./flow";
+import { Flow } from "./flow";
 import { Gene } from "./gene";
 import { Kodo } from "./kodo";
-import {
-  FlowLogic,
-  InputWiring,
-  KodoIO,
-  OutputWiring,
-  Supression,
-} from "./types";
+import { FlowLogic, InputWiring, OutputWiring } from "./types";
 import {
   Wire,
   WireMultiplexer,
@@ -16,8 +10,15 @@ import {
   ComputedWire,
 } from "./wire";
 
-export const $kodo = (genes?: () => Gene[], suppress?: Supression<Gene>[]) =>
-  new Kodo({ genes, suppress });
+export const $kodo = <InputType, OutputType>(
+  fn: (params: {
+    input: InputWiring<InputType>;
+    output: OutputWiring<OutputType>;
+  }) => Gene[]
+) => {
+  return (input?: InputWiring<InputType>, output?: OutputWiring<OutputType>) =>
+    new Kodo({ genes: () => fn({ input: input ?? {}, output: output ?? {} }) });
+};
 
 export const $gene = <InputType, OutputType>(
   lifeCycle: Partial<
@@ -50,15 +51,5 @@ export const $transform = <ValueType, TransformedType>(
 
 export const $exp = <ValueType>(compute: () => ValueType): Wire<ValueType> =>
   new ComputedWire<ValueType>(compute);
-
-export const $io = <InputType, OutputType>(
-  input?: InputWiring<InputType>,
-  output?: OutputWiring<OutputType>
-): KodoIO<InputType, OutputType> => {
-  return {
-    input: input ?? {},
-    output: output ?? {},
-  };
-};
 
 export const $flow = (...logic: FlowLogic | FlowLogic[]) => new Flow(logic);

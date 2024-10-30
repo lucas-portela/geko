@@ -18,10 +18,6 @@ export type OutputWiring<OutputType> = {
 export type WireListener<ValueType> = ((value: ValueType) => void) & {
     priority?: number;
 };
-export type KodoIO<InputType, OutputType> = {
-    input: InputWiring<InputType>;
-    output: OutputWiring<OutputType>;
-};
 export type FlowLogicItem = Kodo | FlowControl;
 export type FlowLogic<FlowLogicType = {}> = FlowLogicItem[] & FlowLogicType;
 export type DeepFlowLogic<FlowLogicType = {}> = (FlowLogicItem | FlowLogic | FlowLogic<FlowLogicType>)[];
