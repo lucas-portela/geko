@@ -45,7 +45,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.$flat = exports.$thread = exports.$split = exports.$repeat = exports.$while = exports.$default = exports.$case = exports.$switch = exports.$else = exports.$if = exports.$num = exports.$str = void 0;
+exports.$flat = exports.$thread = exports.$split = exports.$repeat = exports.$while = exports.$default = exports.$case = exports.$switch = exports.$else = exports.$if = exports.$last = exports.$first = exports.$priority = exports.$num = exports.$str = void 0;
 var flow_1 = require("./flow");
 var shortcuts_1 = require("./shortcuts");
 var wire_1 = require("./wire");
@@ -69,6 +69,21 @@ var $num = function (wireNumber) {
     return (0, shortcuts_1.$transform)(wireNumber, function (value) { return parseFloat(value); });
 };
 exports.$num = $num;
+var $priority = function (priority, listener) {
+    listener.priority = priority;
+    return listener;
+};
+exports.$priority = $priority;
+var $first = function (listener) {
+    listener.priority = Number.MIN_VALUE;
+    return listener;
+};
+exports.$first = $first;
+var $last = function (listener) {
+    listener.priority = Number.MAX_VALUE;
+    return listener;
+};
+exports.$last = $last;
 var $if = function (condition) {
     var doElseBlocks = [];
     for (var _i = 1; _i < arguments.length; _i++) {

@@ -326,8 +326,8 @@ export class Wiring<InputType = any, OutputType = any> {
   private _wireListeners: { wire: Wire<any>; listener: WireListener<any> }[] =
     [];
 
-  read(key: keyof InputType) {
-    return (this._input[key] ?? {}).value ?? null;
+  read<Key extends keyof InputType>(key: keyof InputType): InputType[Key] {
+    return ((this._input[key] ?? {}).value ?? null) as InputType[Key];
   }
 
   write<Key extends keyof OutputType>(key: Key, value: OutputType[Key]) {

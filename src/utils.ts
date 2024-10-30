@@ -1,7 +1,7 @@
 import { FlowControl } from "./flow";
 import { Kodo } from "./kodo";
 import { $flow, $plex, $transform, $wire } from "./shortcuts";
-import { DeepFlowLogic, FlowLogic, FlowLogicItem } from "./types";
+import { DeepFlowLogic, FlowLogic, FlowLogicItem, WireListener } from "./types";
 import { Wire } from "./wire";
 
 export const $str = (...wires: (Wire<any> | string | number | undefined)[]) =>
@@ -16,6 +16,24 @@ export const $str = (...wires: (Wire<any> | string | number | undefined)[]) =>
 export const $num = (wireNumber: Wire<number> | number) => {
   if (!($wire instanceof Wire)) wireNumber = $wire(wireNumber as number);
   return $transform(wireNumber as Wire<any>, (value) => parseFloat(value));
+};
+
+export const $priority = <ValueType>(
+  priority: number,
+  listener: WireListener<ValueType>
+) => {
+  listener.priority = priority;
+  return listener;
+};
+
+export const $first = <ValueType>(listener: WireListener<ValueType>) => {
+  listener.priority = Number.MIN_VALUE;
+  return listener;
+};
+
+export const $last = <ValueType>(listener: WireListener<ValueType>) => {
+  listener.priority = Number.MAX_VALUE;
+  return listener;
 };
 
 export const $if = (

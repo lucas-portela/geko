@@ -1,9 +1,12 @@
 import { FlowControl } from "./flow";
 import { Kodo } from "./kodo";
-import { DeepFlowLogic, FlowLogic, FlowLogicItem } from "./types";
+import { DeepFlowLogic, FlowLogic, FlowLogicItem, WireListener } from "./types";
 import { Wire } from "./wire";
 export declare const $str: (...wires: (Wire<any> | string | number | undefined)[]) => import("./wire").WireTransformer<any[], string>;
 export declare const $num: (wireNumber: Wire<number> | number) => import("./wire").WireTransformer<any, number>;
+export declare const $priority: <ValueType>(priority: number, listener: WireListener<ValueType>) => WireListener<ValueType>;
+export declare const $first: <ValueType>(listener: WireListener<ValueType>) => WireListener<ValueType>;
+export declare const $last: <ValueType>(listener: WireListener<ValueType>) => WireListener<ValueType>;
 export declare const $if: (condition: () => boolean, ...doElseBlocks: DeepFlowLogic<ReturnType<typeof $else>>) => FlowLogicItem[];
 export declare const $else: (...doBlock: DeepFlowLogic) => FlowLogic<{
     type: "$else";

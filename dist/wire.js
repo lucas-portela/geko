@@ -353,7 +353,7 @@ var Wiring = /** @class */ (function () {
     }
     Wiring.prototype.read = function (key) {
         var _a, _b;
-        return (_b = ((_a = this._input[key]) !== null && _a !== void 0 ? _a : {}).value) !== null && _b !== void 0 ? _b : null;
+        return ((_b = ((_a = this._input[key]) !== null && _a !== void 0 ? _a : {}).value) !== null && _b !== void 0 ? _b : null);
     };
     Wiring.prototype.write = function (key, value) {
         var _a;
