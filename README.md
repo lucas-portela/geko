@@ -111,9 +111,9 @@ In addition to modifying a `Kodo`'s genome, you can control its lifecycle and cr
 - `kill(): boolean`: Terminates the `Kodo`, creating fresh instances of all genes upon reinitialization.
 - `clone(): Kodo`: Creates a new instance of the `Kodo`, replicating all previous gene additions and removals, including mutations.
 
-## Introducing GeKo v3.0: Flow and Shortcuts
+## Introducing Flow and Shortcuts
 
-With GeKo v3.0, you can achieve the same results with a more concise and isolated syntax:
+With shortcuts you can achieve the same results with a more concise and isolated syntax:
 
 ```typescript
 const Timer = $kodo<
