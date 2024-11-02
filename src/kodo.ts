@@ -1,6 +1,5 @@
 import { Gene } from "./gene";
 import { Criteria, GeneClass, Supression } from "./types";
-import { Wiring } from "./wire";
 
 export class Kodo {
   private _genes: Gene[] = [];

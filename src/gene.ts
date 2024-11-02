@@ -1,6 +1,6 @@
 import { Kodo } from "./kodo";
-import { InputWiring, OutputWiring, WireListener } from "./types";
-import { Wire, Wiring } from "./wire";
+import { WireListener } from "./types";
+import { Wiring } from "./wire";
 
 export class Gene<InputType = any, OutputType = any> extends Wiring<
   InputType,

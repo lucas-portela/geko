@@ -1,6 +1,6 @@
 import { Kodo } from "./kodo";
 import { DeepFlowLogic, FlowLogic } from "./types";
-import { $flat } from "./utils";
+import { $flat } from "./utils/logic";
 
 export class FlowCursor {
   private _executionPromise: Promise<boolean>;
