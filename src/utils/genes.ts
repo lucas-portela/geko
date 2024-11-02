@@ -1,4 +1,5 @@
 import { Gene } from "../gene";
+import { Wire } from "../wire";
 import { $last } from "./wire";
 
 export class Finish extends Gene<{ when: any }> {
@@ -12,4 +13,4 @@ export class Finish extends Gene<{ when: any }> {
   }
 }
 
-export const $finish = () => new Finish();
+export const $finish = (when: Wire<any>) => new Finish().input({ when });
