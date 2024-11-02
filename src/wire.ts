@@ -468,6 +468,7 @@ export class Wiring<InputType = any, OutputType = any> {
   output(wiring: OutputWiring<OutputType>) {
     for (let key in wiring) {
       for (let wire of wiring[key]) {
+        if (!wire) continue;
         this._output[key] = this._output[key] ?? [];
         if (!this._output[key].includes(wire)) this._output[key].push(wire);
       }
