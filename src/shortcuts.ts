@@ -1,7 +1,7 @@
 import { Flow } from "./flow";
 import { Gene } from "./gene";
 import { Kodo } from "./kodo";
-import { FlowLogic, InputWiring, OutputWiring } from "./types";
+import { DeepFlowLogic } from "./types";
 import {
   Wire,
   WireMultiplexer,
@@ -49,4 +49,4 @@ export const $transform = <ValueType, TransformedType>(
 export const $exp = <ValueType>(compute: () => ValueType): Wire<ValueType> =>
   new ComputedWire<ValueType>(compute);
 
-export const $flow = (...logic: FlowLogic | FlowLogic[]) => new Flow(logic);
+export const $flow = (...logic: DeepFlowLogic) => new Flow(logic);

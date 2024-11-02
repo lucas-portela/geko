@@ -73,17 +73,20 @@ export class Flow {
           break;
         } else cursor.address++;
       } else if (current instanceof FlowControl) {
-        const spawned: FlowCursor[] = [];
-        const spawn = (address: number) => {
+        console.log(current.comment);
+        const spawned: { cursor: FlowCursor; wait: boolean }[] = [];
+        const spawn = (address: number, wait: boolean = true) => {
           const newCursor = new FlowCursor(address);
-          spawned.push(newCursor);
+          spawned.push({ cursor: newCursor, wait });
           this.run(newCursor);
           return newCursor;
         };
 
         await current.eval(cursor, spawn);
 
-        const result = await Promise.all(spawned.map((c) => c.result));
+        const result = await Promise.all(
+          spawned.filter((x) => x.wait).map((x) => x.cursor.result)
+        );
 
         if (result.find((result) => result === false)) {
           cursor.fail();
@@ -106,12 +109,15 @@ export class FlowControl {
   constructor(
     private _evaluator: (
       cursor: FlowCursor,
-      spawn?: (address: number) => FlowCursor
+      spawn?: (address: number, wait?: boolean) => FlowCursor
     ) => Promise<number>,
     public readonly comment?: string
   ) {}
 
-  async eval(cursor: FlowCursor, spawn: (address: number) => FlowCursor) {
+  async eval(
+    cursor: FlowCursor,
+    spawn: (address: number, wait?: boolean) => FlowCursor
+  ) {
     cursor.address = await this._evaluator(cursor, spawn);
   }
 }

@@ -152,6 +152,22 @@ export const $split = (
   ];
 };
 
+export const $branch = (deepBlock: FlowLogic<ReturnType<typeof $thread>>) => {
+  const block = $flat(deepBlock);
+  const size = 2 + block.length;
+  return [
+    new FlowControl(async (cursor, spawn) => {
+      spawn(cursor.address + 1, false);
+      return cursor.address + size;
+    }, "$branch:spawn-thread"),
+    ...block,
+    new FlowControl(async (cursor) => {
+      cursor.success();
+      return cursor.address;
+    }, "$branch:close-thread"),
+  ];
+};
+
 export const $thread = (...doBlock: DeepFlowLogic) => {
   const block = $flat([...doBlock]) as FlowLogic<{ type: "$thread" }>;
   block.type = "$thread";
