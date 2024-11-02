@@ -116,23 +116,30 @@ In addition to modifying a `Kodo`'s genome, you can control its lifecycle and cr
 With shortcuts you can achieve the same results with a more concise and isolated syntax:
 
 ```typescript
-const Timer = $kodo<
-  { label: string; interval: number; duration: number },
-  { time: number }
->(({ input, output }) => {
-  const time = $wire<number>().pipe(output.time);
+const Timer = (
+  input: InputWiring<{
+    label: string;
+    interval: number;
+    duration: number;
+  }> = {},
+  output: OutputWiring<{ time: number }> = {}
+) =>
+  $kodo(() => {
+    const time = $wire<number>().pipe(output.time);
 
-  return [
-    new Clock().input({ interval: input.interval }).output({ time: [time] }),
-    new Logger().input({
-      message: $str(
-        input?.label,
-        $transform(time, (value) => value.toFixed(1) + "s")
-      ).sync(time),
-    }),
-    new Expiration().input({ time, expiresIn: input.duration }),
-  ];
-});
+    return [
+      new Clock()
+        .input({ interval: input.interval })
+        .output({ time: [time] }),
+      new Logger().input({
+        message: $str(
+          input?.label,
+          $transform(time, (value) => value.toFixed(1) + "s")
+        ).sync(time),
+      }),
+      new Expiration().input({ time, expiresIn: input.duration }),
+    ];
+  });
 
 const testFlow = $flow(
   $repeat($num(4), (i) => [

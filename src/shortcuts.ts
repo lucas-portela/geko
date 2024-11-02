@@ -11,15 +11,8 @@ import {
   QueueWire,
 } from "./wire";
 
-export const $kodo = <InputType, OutputType>(
-  fn: (params: {
-    input: InputWiring<InputType>;
-    output: OutputWiring<OutputType>;
-  }) => Gene[]
-) => {
-  return (input?: InputWiring<InputType>, output?: OutputWiring<OutputType>) =>
-    new Kodo({ genes: () => fn({ input: input ?? {}, output: output ?? {} }) });
-};
+export const $kodo = <InputType, OutputType>(genes: () => Gene[]) =>
+  new Kodo({ genes });
 
 export const $gene = <InputType, OutputType>(
   lifeCycle: Partial<
