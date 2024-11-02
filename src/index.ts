@@ -5,3 +5,4 @@ export * from "./wire";
 export * from "./shortcuts";
 export * from "./utils";
 export * from "./flow";
+export * from "./errors";

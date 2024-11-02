@@ -8,6 +8,7 @@ import {
   NamedWireMultiplexer,
   WireTransformer,
   ComputedWire,
+  QueueWire,
 } from "./wire";
 
 export const $kodo = <InputType, OutputType>(
@@ -36,6 +37,9 @@ export const $gene = <InputType, OutputType>(
 };
 
 export const $wire = <ValueType>(value?: ValueType) => new Wire(value);
+
+export const $queue = <ValueType>(values?: ValueType[]) =>
+  new QueueWire<ValueType>(values);
 
 export const $plex = <ValueType>(wires: (Wire<ValueType> | ValueType)[]) =>
   new WireMultiplexer(wires);

@@ -1,3 +1,5 @@
+import { WritingLockedWireError, WritingReadOnlyWireError } from "./errors";
+import { $wire } from "./shortcuts";
 import { InputWiring, OutputWiring, WireListener } from "./types";
 
 export class Wire<ValueType> {
@@ -5,25 +7,52 @@ export class Wire<ValueType> {
   private _pipedWires: Wire<ValueType>[] = [];
   private _syncedWith: Wire<any>;
   private _syncListener: WireListener<any>;
+  private _isLocked: boolean = false;
+  private _lockPromise: Promise<void>;
+  private _lockResolver: () => void;
 
   get value() {
     return this._value;
   }
 
   set value(value: ValueType) {
+    if (this.isLocked) throw new WritingLockedWireError();
     this._value = value;
     this.emit();
+  }
+
+  get isLocked() {
+    return this._isLocked;
   }
 
   constructor(protected _value?: ValueType) {
     this._syncListener = () => this.emit({ triggeredBySync: true });
     this._syncListener.priority = 1;
+    this._lockPromise = Promise.resolve();
   }
 
   _applyPipe() {
     this._pipedWires.forEach((wire) => {
       wire.value = this.value;
     });
+  }
+
+  lock() {
+    this._isLocked = true;
+    this._lockPromise = new Promise(
+      (resolve) => (this._lockResolver = resolve)
+    );
+  }
+
+  unlock() {
+    if (this.isLocked) {
+      this._isLocked = false;
+      this._lockResolver();
+    }
+  }
+
+  async writeLock() {
+    await this._lockPromise;
   }
 
   emit({
@@ -35,10 +64,20 @@ export class Wire<ValueType> {
   } = {}) {
     if (this._syncedWith && !triggeredBySync) return false;
     if (uniqueListener) uniqueListener(this.value);
-    else
-      this._listeners
-        .sort((a, b) => (a.priority || 0) - (b.priority || 0))
-        .forEach((listener) => listener(this.value));
+    else {
+      this._listeners.sort((a, b) => (a.priority || 0) - (b.priority || 0));
+
+      let calledListeners: WireListener<any>[] = [];
+      while (true) {
+        let listener = this._listeners.filter(
+          (l) => !calledListeners.includes(l)
+        )[0];
+        if (listener) {
+          calledListeners.push(listener);
+          listener(this.value);
+        } else break;
+      }
+    }
     this._applyPipe();
     return true;
   }
@@ -112,6 +151,12 @@ export class Wire<ValueType> {
     if (this.value != undefined) this._applyPipe();
     return this;
   }
+
+  unpipe(wires: Wire<ValueType>[] | undefined) {
+    if (!wires) return this;
+    this._pipedWires = this._pipedWires.filter((wire) => !wires.includes(wire));
+    return this;
+  }
 }
 
 export class ComputedWire<ValueType> extends Wire<ValueType> {
@@ -123,7 +168,37 @@ export class ComputedWire<ValueType> extends Wire<ValueType> {
     return this._compute();
   }
 
-  set value(_: ValueType) {}
+  set value(_: ValueType) {
+    throw new WritingReadOnlyWireError();
+  }
+}
+
+export class QueueWire<ValueType> extends Wire<ValueType> {
+  private _values: ValueType[] = [];
+
+  constructor(values?: ValueType[]) {
+    super();
+    this._values = values || [];
+  }
+
+  get value() {
+    return this._value;
+  }
+
+  set value(value: ValueType) {
+    if (this.isLocked) throw new WritingLockedWireError();
+    this._values.push(value);
+  }
+
+  get length() {
+    return this._values.length;
+  }
+
+  pop() {
+    this._value = this._values[0];
+    this._values = this._values.slice(1);
+    if (this._value !== undefined) this.emit();
+  }
 }
 
 export class WireMultiplexer<ValueType> extends Wire<ValueType[]> {
@@ -151,6 +226,7 @@ export class WireMultiplexer<ValueType> extends Wire<ValueType[]> {
   }
 
   set value(values: ValueType[]) {
+    if (this.isLocked) throw new WritingLockedWireError();
     this._pauseChildrenListener = true;
     values.forEach((value, i) => {
       this._wires[i].value = value;
@@ -224,6 +300,7 @@ export class NamedWireMultiplexer<
   }
 
   set value(values: Partial<NamedTypes>) {
+    if (this.isLocked) throw new WritingLockedWireError();
     for (let key in values) {
       let wire = this._wires[key];
       if (wire) wire.value = values[key];
@@ -270,6 +347,7 @@ export class WireTransformer<
   private _childListener: WireListener<ValueType>;
   private _attached: boolean = false;
   private _transformer: (value: ValueType) => TransformedType;
+  private _overwritedValue: TransformedType;
 
   constructor(
     wire: Wire<ValueType>,
@@ -285,13 +363,19 @@ export class WireTransformer<
 
   get value() {
     this._value =
-      this._wire.value == undefined
+      this._overwritedValue !== undefined
+        ? this._overwritedValue
+        : this._wire.value == undefined
         ? undefined
         : this._transformer(this._wire.value);
     return this._value;
   }
 
-  set value(value: TransformedType) {}
+  set value(value: TransformedType) {
+    if (this.isLocked) throw new WritingLockedWireError();
+    this._overwritedValue = value;
+    this.emit();
+  }
 
   attach(
     listener: WireListener<TransformedType>,
@@ -326,14 +410,32 @@ export class Wiring<InputType = any, OutputType = any> {
   private _wireListeners: { wire: Wire<any>; listener: WireListener<any> }[] =
     [];
 
+  lock<Key extends keyof InputType>(key: Key) {
+    const wire = this._input[key];
+    if (wire) wire.lock();
+  }
+
+  unlock<Key extends keyof InputType>(key: Key) {
+    const wire = this._input[key];
+    if (wire) wire.unlock();
+  }
+
   read<Key extends keyof InputType>(key: Key): InputType[Key] {
     return ((this._input[key] ?? {}).value ?? null) as InputType[Key];
+  }
+
+  inputWire<Key extends keyof InputType>(key: Key): Wire<InputType[Key]> {
+    return this._input[key] ?? $wire<InputType[Key]>();
+  }
+
+  outputWire<Key extends keyof OutputType>(key: Key): Wire<OutputType[Key]>[] {
+    return this._output[key] ?? [];
   }
 
   write<Key extends keyof OutputType>(key: Key, value: OutputType[Key]) {
     const wires = this._output[key] ?? [];
     wires.forEach((wire) => {
-      wire.value = value;
+      wire.writeLock().then(() => (wire.value = value));
     });
   }
 

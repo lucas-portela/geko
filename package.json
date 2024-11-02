@@ -1,6 +1,6 @@
 {
   "name": "@gekojs/core",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Genetika Kodo: A more genetic style of programming, you could call it genetic coding.",
   "main": "dist/index.js",
   "scripts": {
